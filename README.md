@@ -27,7 +27,7 @@ gcloud auth application-default login
 The chatbot configuration in `chatbot/.env` uses:
 - `GOOGLE_GENAI_USE_ENTERPRISE=1`
 - `GOOGLE_CLOUD_PROJECT=sreeai-noorg`
-- `GOOGLE_CLOUD_LOCATION=us-central1`
+- `GOOGLE_CLOUD_LOCATION=global`
 
 ### 3. Run the Chatbot
 
