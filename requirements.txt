@@ -1,0 +1,3 @@
+google-adk>=2.0.0
+python-dotenv>=1.0.0
+google-cloud-aiplatform>=1.60.0
