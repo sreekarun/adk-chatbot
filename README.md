@@ -24,10 +24,15 @@ Authenticate with your Google Cloud account for Application Default Credentials 
 ```bash
 gcloud auth application-default login
 ```
-The chatbot configuration in `chatbot/.env` uses:
+Copy the template and fill in your project:
+```bash
+cp .env.example chatbot/.env
+```
+`chatbot/.env` sets:
 - `GOOGLE_GENAI_USE_ENTERPRISE=1`
-- `GOOGLE_CLOUD_PROJECT=sreeai-noorg`
+- `GOOGLE_CLOUD_PROJECT=your-google-cloud-project-id`
 - `GOOGLE_CLOUD_LOCATION=global`
+- `MODEL_NAME=gemini-3.8-flash` (optional; this is the default)
 
 ### 3. Run the Chatbot
 
