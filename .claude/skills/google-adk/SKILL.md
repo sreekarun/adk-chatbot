@@ -191,7 +191,17 @@ adk deploy gke ... | adk deploy docker ...
 Check `adk deploy <target> --help` first — several older flags
 (`--staging_bucket`, `--env_file`, `--requirements_file`, `--adk_app`) are deprecated
 in 2.14. Use `--agent_engine_id` to update an existing Agent Engine instance and
-`--trace_to_cloud` / `--otel_to_cloud` for observability.
+`--otel_to_cloud` for observability.
+
+Agent Engine gotchas (verified in 2.14):
+- The runtime gets `GOOGLE_CLOUD_LOCATION=<runtime region>`. Models only served on
+  `global` will 404 unless the model pins its location:
+  `Gemini(model=..., client_kwargs={'location': 'global'})`.
+- Without `--env_file`, `<agent>/.env` is forwarded as runtime env vars (minus
+  `GOOGLE_CLOUD_PROJECT`). `--env_file` must be an absolute path — the deploy
+  `chdir`s before reading it, so relative paths are silently skipped.
+- The agent folder is copied using its own `.gitignore` / `.gcloudignore` /
+  `.ae_ignore`; keep `.env` listed there so it never lands in the image.
 
 ## Checklist when changing the agent
 

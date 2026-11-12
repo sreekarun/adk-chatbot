@@ -26,9 +26,29 @@ Always activate the venv first: `source .venv/bin/activate`
 | Dev web UI | `adk web .` (parent dir; lists every agent folder) or `adk web chatbot` |
 | API server | `adk api_server .` |
 | Run evals | `adk eval chatbot chatbot/evals/<set>.evalset.json` |
-| Deploy | `adk deploy agent_engine --project <p> --region <r> chatbot` |
+| Deploy (update existing) | see "Deployment" below |
 
 `adk web` / `api_server` endpoints are unauthenticated — local use only.
+
+## Deployment (Agent Engine / Agent Platform Runtimes)
+
+Deployed runtime: `projects/sreeai-noorg/locations/us-east4/reasoningEngines/7387508675864166400`
+(display name `adk-chatbot`). Redeploy by updating it in place — omitting
+`--agent_engine_id` creates a second, separately billed instance:
+
+```bash
+adk deploy agent_engine --project sreeai-noorg --region us-east4 \
+  --agent_engine_id 7387508675864166400 --display_name adk-chatbot \
+  --env_file "$PWD/deploy.env" chatbot
+```
+
+- `--env_file` must be an **absolute** path: the deploy `chdir`s into a temp build
+  folder before reading it, so a relative path is silently ignored.
+- `deploy.env` holds runtime env vars. Don't put `GOOGLE_CLOUD_PROJECT` /
+  `GOOGLE_CLOUD_LOCATION` there — Agent Engine sets them (location = runtime region).
+- `chatbot/.env` is not copied into the image (excluded by `chatbot/.gitignore`).
+- Smoke test: `vertexai.Client(project=..., location="us-east4").agent_engines.get(name=...)`
+  then `.stream_query(user_id="smoke-test", message="hi")`.
 
 ## Environment / auth
 
@@ -38,6 +58,9 @@ Always activate the venv first: `source .venv/bin/activate`
   values raise an error.
 - `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION` (currently `global`).
 - `MODEL_NAME` — the model the root agent should use.
+- `MODEL_LOCATION` (default `global`) — location for model calls, independent of
+  `GOOGLE_CLOUD_LOCATION`. Needed because `gemini-3.8-flash` is only served from
+  `global` (404 in us-east4 / us-central1), while an Agent Engine runtime is regional.
 
 ## Conventions
 
