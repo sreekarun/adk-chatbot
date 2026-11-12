@@ -7,5 +7,6 @@ create_params:
   root_agent_name: root_agent
   deployment_target: agent_runtime
   agent_guidance_filename: CLAUDE.md
+  cicd_runner: github_actions
 acli_version: 1.14.0
 region: us-east4

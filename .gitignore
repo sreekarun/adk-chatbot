@@ -44,3 +44,9 @@ env/
 .google-agents-cli/
 .agents-cli-original/
 deployment_metadata.json.lock
+
+# Terraform local working files
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan

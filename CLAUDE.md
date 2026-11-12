@@ -36,25 +36,31 @@ skill `.claude/skills/google-adk/` has repo-specific ADK notes and gotchas.
 | Lint | `agents-cli lint` |
 | Unit/integration tests | `uv run pytest tests/unit tests/integration` |
 | Eval | `agents-cli eval run` |
-| Deploy (dry run) | `agents-cli deploy --project sreeai-noorg --region us-east4 --dry-run` |
-| Deploy | `agents-cli deploy --project sreeai-noorg --region us-east4` |
-| Deploy status / list | `agents-cli deploy --status` / `--list` |
-| Test deployed agent | `agents-cli run --url https://us-east4-aiplatform.googleapis.com/v1/projects/29833218647/locations/us-east4/reasoningEngines/7387508675864166400 --mode adk "hello"` (full https URL required) |
+| Integration tests | `uv run --env-file .env pytest tests/integration` (pytest doesn't load `.env`) |
+| Test deployed agent | `agents-cli run --mode adk "hello" --url https://us-east4-aiplatform.googleapis.com/v1/projects/<project>/locations/us-east4/reasoningEngines/<id>` (full https URL required) |
 
-Run Python via `uv run ...`, not a bare `python`. Never deploy without the user's
-explicit go-ahead.
+Run Python via `uv run ...`, not a bare `python`.
 
-## Deployment (Agent Runtime)
+## Deployment — GitHub Actions + Terraform only
 
-Runtime: `projects/sreeai-noorg/locations/us-east4/reasoningEngines/7387508675864166400`,
-display name `adk-chatbot`. `agents-cli deploy` matches the existing runtime by
-**display name** (= project `name` in the manifest, or `--service-name`) and updates
-it in place — changing the name creates a new, separately billed runtime.
+Full docs: `docs/` (start at `docs/README.md`; process in `docs/release-process.md`,
+bootstrap in `docs/cicd-setup.md`).
 
-- Extra runtime env vars: `--env-vars KEY=VALUE,...` (on top of root `.env`);
-  secrets via `--secrets ENV=SECRET[:VERSION]` (Secret Manager).
-- No revision rollback on Agent Runtime: fix and redeploy.
-- Logs: `gcloud logging read 'resource.type="aiplatform.googleapis.com/ReasoningEngine"' --project sreeai-noorg --limit 50`
+- **Never run `agents-cli deploy` against staging or prod by hand.** Changes ship via
+  PR → merge to `main` → *Deploy to Staging* → approval → *Deploy to Production*.
+- Staging: `adk-chatbot-staging`, runtime `1601509054599921664`.
+  Prod (+ CI/CD resources, TF state): `adk-chatbot-prod`, runtime `721618277402411008`.
+  Region `us-east4`. `sreeai-noorg` is the local dev project only.
+- Infra lives in `deployment/terraform/cicd/`, applied with
+  `agents-cli infra cicd --staging-project adk-chatbot-staging --prod-project adk-chatbot-prod --repository-name adk-chatbot --repository-owner sreekarun --cicd-runner github_actions --region us-east4`
+  (plan first; add `--apply` only with the user's go-ahead).
+- Local change to the template: required reviewer on the `production` environment
+  in `deployment/terraform/cicd/github.tf` — keep it after `scaffold upgrade`.
+- Don't apply `deployment/terraform/single-project/` (would create another runtime
+  in `sreeai-noorg`). Don't rename the project — deploys match runtimes by display
+  name `adk-chatbot`.
+- Staging deploys only when `chatbot/**`, `tests/**`, `deployment/**` or `uv.lock`
+  change. No revision rollback: revert on `main`.
 
 ## Environment / auth
 

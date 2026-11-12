@@ -37,8 +37,13 @@ agents-cli run "hello"    # one-shot smoke test
 agents-cli playground     # web playground
 ```
 
-### 4. Deploy to Agent Runtime
-```bash
-agents-cli deploy --project your-google-cloud-project-id --region us-east4 --dry-run
-agents-cli deploy --project your-google-cloud-project-id --region us-east4
-```
+### 4. Deploy
+
+Deployment is automated: merge to `main` → GitHub Actions deploys to **staging**,
+then to **production** after manual approval. Infrastructure is Terraform
+(`deployment/terraform/cicd/`).
+
+## Documentation
+
+See [`docs/`](docs/README.md) — architecture, local development, CI/CD bootstrap,
+release process, operations and troubleshooting.
