@@ -39,3 +39,8 @@ env/
 *.swp
 *.swo
 .DS_Store
+
+# agents-cli local state
+.google-agents-cli/
+.agents-cli-original/
+deployment_metadata.json.lock

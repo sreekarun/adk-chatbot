@@ -1,0 +1,11 @@
+name: adk-chatbot
+agent_directory: chatbot
+language: python
+base_template: adk_python
+framework: google-adk
+create_params:
+  root_agent_name: root_agent
+  deployment_target: agent_runtime
+  agent_guidance_filename: CLAUDE.md
+acli_version: 1.14.0
+region: us-east4

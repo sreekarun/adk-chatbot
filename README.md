@@ -6,42 +6,39 @@ A simple chatbot application built using **Google Agent Development Kit (ADK) 2.
 - **Framework:** Google ADK 2.0 (`google-adk`)
 - **Platform:** Gemini Enterprise Agent Platform (GEAP)
 - **Model:** `gemini-3.8-flash`
-- **Runtime:** Python 3.10+
+- **Runtime:** Python 3.11–3.13 (uv)
+- **Tooling:** agents-cli (build, eval, deploy to Agent Runtime)
 
 ## Getting Started
 
-### 1. Setup Environment
-```bash
-# Activate the virtual environment
-source .venv/bin/activate
+Build, run and deploy use [agents-cli](https://google.github.io/agents-cli/)
+(`uvx google-agents-cli setup`, needs [uv](https://docs.astral.sh/uv/)).
 
-# Install dependencies
-pip install -r requirements.txt
+### 1. Install dependencies
+```bash
+agents-cli install        # uv sync into .venv (Python 3.11-3.13)
 ```
 
-### 2. Configure GEAP Credentials
-Authenticate with your Google Cloud account for Application Default Credentials (ADC):
+### 2. Configure GEAP credentials
 ```bash
 gcloud auth application-default login
+cp .env.example .env              # project env, propagated on deploy
+cp .env.example chatbot/.env      # read by the ADK loader locally
 ```
-Copy the template and fill in your project:
-```bash
-cp .env.example chatbot/.env
-```
-`chatbot/.env` sets:
+Set:
 - `GOOGLE_GENAI_USE_ENTERPRISE=1`
 - `GOOGLE_CLOUD_PROJECT=your-google-cloud-project-id`
 - `GOOGLE_CLOUD_LOCATION=global`
-- `MODEL_NAME=gemini-3.8-flash` (optional; this is the default)
+- `MODEL_NAME=gemini-3.8-flash` and `MODEL_LOCATION=global` (optional; these are the defaults)
 
-### 3. Run the Chatbot
-
-**Interactive CLI mode:**
+### 3. Run locally
 ```bash
-adk run chatbot
+agents-cli run "hello"    # one-shot smoke test
+agents-cli playground     # web playground
 ```
 
-**Developer Web UI mode:**
+### 4. Deploy to Agent Runtime
 ```bash
-adk web chatbot
+agents-cli deploy --project your-google-cloud-project-id --region us-east4 --dry-run
+agents-cli deploy --project your-google-cloud-project-id --region us-east4
 ```

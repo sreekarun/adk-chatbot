@@ -1,6 +1,7 @@
 import os
 
 from google.adk.agents import Agent
+from google.adk.apps import App
 from google.adk.models import Gemini
 
 MODEL_NAME = os.getenv('MODEL_NAME', 'gemini-3.8-flash')
@@ -15,3 +16,7 @@ root_agent = Agent(
     description='A helpful assistant for user questions.',
     instruction='Answer user questions to the best of your knowledge',
 )
+
+# agents-cli serving (chatbot/fast_api_app.py) imports `app`; its name must match
+# the agent directory name.
+app = App(root_agent=root_agent, name='chatbot')

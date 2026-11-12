@@ -1,0 +1,9 @@
+{
+  "remote_agent_runtime_id": "projects/29833218647/locations/us-east4/reasoningEngines/7387508675864166400",
+  "deployment_timestamp": "2026-11-12T22:55:54.773087+00:00",
+  "deployment_target": "agent_runtime",
+  "is_a2a": false,
+  "language": "python",
+  "agent_directory": "chatbot",
+  "app_name": "chatbot"
+}

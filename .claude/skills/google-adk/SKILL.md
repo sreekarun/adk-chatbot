@@ -5,18 +5,17 @@ description: Patterns for building agents with Google ADK 2.x (google-adk) in th
 
 # Google ADK 2.x — working notes
 
-Verified against **google-adk 2.14.0 / google-genai 2.34.0** (the versions in `.venv`).
+Verified against **google-adk 2.14.x / google-genai 2.34** (the versions in `.venv`, managed by uv).
 If the installed version changes, re-check signatures before relying on this file:
 
 ```bash
-source .venv/bin/activate
-pip show google-adk | grep Version
-python -c "from google.adk.agents import LlmAgent; print(list(LlmAgent.model_fields))"
-adk --help
+uv pip show google-adk | grep Version
+uv run python -c "from google.adk.agents import LlmAgent; print(list(LlmAgent.model_fields))"
+agents-cli --help
 ```
 
 When unsure about an API, read the installed source under
-`.venv/lib/python3.14/site-packages/google/adk/` rather than guessing.
+`.venv/lib/python3.13/site-packages/google/adk/` rather than guessing.
 
 ## 1. Agent package contract
 
@@ -78,8 +77,8 @@ def get_order_status(order_id: str, tool_context: ToolContext) -> dict:
 - `VertexAiSearchTool(data_store_id=...)`, `DiscoveryEngineSearchTool`
 - `load_memory`, `preload_memory`, `load_artifacts`
 - `AgentTool(agent=other_agent)` — call another agent *as a tool* (returns to caller)
-- `McpToolset(...)` — expose an MCP server's tools (needs `pip install mcp` — not
-  installed by default; add it to `requirements.txt` if used)
+- `McpToolset(...)` — expose an MCP server's tools (needs `uv add mcp` — not
+  installed by default)
 - `APIHubToolset`, `exit_loop`, `transfer_to_agent`, `get_user_choice`
 
 Some Gemini built-in tools (e.g. search grounding) can't be mixed with function
@@ -150,9 +149,10 @@ agent = Agent(..., output_schema=Answer, output_key="answer",
 ## 8. Running
 
 ```bash
-adk run chatbot                 # interactive CLI
-adk run chatbot "hello"         # single query
-adk web .                       # dev UI (AGENTS_DIR = parent, or a single agent folder)
+agents-cli run "hello"          # preferred: smoke test via the real serving app
+agents-cli playground           # web playground
+uv run adk run chatbot          # raw ADK CLI still works (interactive)
+uv run adk web .                # raw ADK dev UI
 adk api_server .                # FastAPI server
 ```
 
@@ -162,6 +162,10 @@ Programmatic use: `google.adk.runners.Runner` with a session service
 (`google.adk.sessions.InMemorySessionService` for local tests).
 
 ## 9. Evals
+
+This repo uses **agents-cli evals** (`tests/eval/`, `agents-cli eval run`) — load the
+global `google-agents-cli-eval` skill for its dataset schema. The raw ADK eval CLI
+below also works (prefix with `uv run`):
 
 ```bash
 adk eval_set --help                                          # create/manage eval sets
@@ -182,31 +186,31 @@ adk eval chatbot <set> --config_file_path <cfg> --num_runs 3
 
 ## 10. Deploy
 
+**This repo deploys with agents-cli, not `adk deploy`.** Load the global
+`google-agents-cli-deploy` skill first, then:
+
 ```bash
-adk deploy agent_engine --project <p> --region <r> --display_name <name> chatbot
-adk deploy cloud_run    --project <p> --region <r> chatbot
-adk deploy gke ... | adk deploy docker ...
+agents-cli deploy --project sreeai-noorg --region us-east4 --dry-run
+agents-cli deploy --project sreeai-noorg --region us-east4
 ```
 
-Check `adk deploy <target> --help` first — several older flags
-(`--staging_bucket`, `--env_file`, `--requirements_file`, `--adk_app`) are deprecated
-in 2.14. Use `--agent_engine_id` to update an existing Agent Engine instance and
-`--otel_to_cloud` for observability.
+agents-cli matches the existing runtime by display name (`adk-chatbot`, the
+manifest `name`) and updates it in place. The image is built from the repo-root
+`Dockerfile`; runtime env vars come from the root `.env` plus `--env-vars`.
+The serving code imports `app` from `chatbot/agent.py`, so keep
+`app = App(root_agent=root_agent, name='chatbot')`.
 
-Agent Engine gotchas (verified in 2.14):
+Agent Runtime gotchas (verified):
 - The runtime gets `GOOGLE_CLOUD_LOCATION=<runtime region>`. Models only served on
   `global` will 404 unless the model pins its location:
   `Gemini(model=..., client_kwargs={'location': 'global'})`.
-- Without `--env_file`, `<agent>/.env` is forwarded as runtime env vars (minus
-  `GOOGLE_CLOUD_PROJECT`). `--env_file` must be an absolute path — the deploy
-  `chdir`s before reading it, so relative paths are silently skipped.
-- The agent folder is copied using its own `.gitignore` / `.gcloudignore` /
-  `.ae_ignore`; keep `.env` listed there so it never lands in the image.
+- The upload honours the root `.gcloudignore` (which includes `.gitignore`); keep
+  `.env` listed there so it never lands in the image.
 
 ## Checklist when changing the agent
 
-1. `root_agent` still exported; `python -c "import chatbot.agent"` succeeds.
+1. `root_agent` and `app` still exported; `uv run python -c "import chatbot.agent"` succeeds.
 2. New config vars added to `.env.example`.
 3. Tool docstrings/type hints describe every argument.
-4. `adk run chatbot "<prompt>"` exercises the change.
+4. `agents-cli run "<prompt>"` exercises the change.
 5. Add or update an eval case for new behaviour.
