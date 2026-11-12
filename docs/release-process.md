@@ -34,10 +34,11 @@ Workflow: `.github/workflows/staging.yaml` (same path filter as above).
    copied to `gs://<staging logs bucket>/load-test-results/`.
 3. On success it calls the production workflow.
 
-> A push that touches none of the filtered paths does **not** deploy, and the
-> staging workflow has no manual trigger. To redeploy staging without a code
-> change, the change must touch a filtered path. Production alone can be
-> redeployed manually (see below).
+> A push that touches none of the filtered paths does **not** deploy. To deploy
+> anyway (e.g. after a root-level config fix), start it manually — this
+> `workflow_dispatch` trigger is a local addition to the template:
+> `gh workflow run staging.yaml --ref main` or Actions → *Deploy to Staging* →
+> *Run workflow*. It still flows on to the gated production job.
 
 ## 3. Approve → production
 

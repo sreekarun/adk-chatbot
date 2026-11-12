@@ -15,6 +15,9 @@
 name: Deploy to Staging
 
 on:
+  # Local addition (not in the agents-cli template): allow redeploying staging
+  # from the Actions tab without a code change.
+  workflow_dispatch:
   push:
     branches:
       - main

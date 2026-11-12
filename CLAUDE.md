@@ -61,6 +61,9 @@ bootstrap in `docs/cicd-setup.md`).
   name `adk-chatbot`.
 - Staging deploys only when `chatbot/**`, `tests/**`, `deployment/**` or `uv.lock`
   change. No revision rollback: revert on `main`.
+- Keep the committed `deployment_metadata.json` at `null` values. agents-cli deploys
+  to the runtime ID recorded there before matching by name, so a stale ID sends CI
+  to the wrong project (403).
 
 ## Environment / auth
 

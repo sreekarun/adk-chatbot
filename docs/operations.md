@@ -76,4 +76,5 @@ Secrets: store in Secret Manager in the target project and pass via
 | WIF / auth failures in Actions | Re-run `agents-cli infra cicd ... --apply`; IAM can take a few minutes to propagate |
 | Agent errors after deploy | Logs query above; look for import errors (`app` must be exported from `chatbot/agent.py`) |
 | `agents-cli deploy` created a second runtime | Display name changed. The pipeline matches on `adk-chatbot` (manifest `name`) — don't rename |
+| CI deploy: `403 ... aiplatform.reasoningEngines.get` on a runtime in another project | `deployment_metadata.json` has a stale `remote_agent_runtime_id`; agents-cli targets that ID before matching by display name. Keep the committed file at `null` values (a local `agents-cli deploy` rewrites it — don't commit that). Happened on the first pipeline run, 2026-11-12 |
 | Python 3.14 errors | Template requires `>=3.11,<3.14`; recreate with `agents-cli install` |
