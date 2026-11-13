@@ -74,6 +74,6 @@ jobs:
           uvx google-agents-cli@1.14.0 deploy \
             --project ${{ vars.PROD_PROJECT_ID }} \
             --region ${{ vars.REGION }} \
-            --update-env-vars="OTEL_RESOURCE_ATTRIBUTES=service.version=${{ github.sha }},LOGS_BUCKET_NAME=${{ vars.LOGS_BUCKET_NAME_PROD }},GOOGLE_GENAI_USE_ENTERPRISE=true" \
+            --update-env-vars="OTEL_RESOURCE_ATTRIBUTES=service.version=${{ github.sha }},LOGS_BUCKET_NAME=${{ vars.LOGS_BUCKET_NAME_PROD }},GOOGLE_GENAI_USE_ENTERPRISE=true,GCSFS_EXPERIMENTAL_ZB_HNS_SUPPORT=false" \
             --remove-env-vars=GOOGLE_GENAI_USE_VERTEXAI
 
