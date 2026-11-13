@@ -14,7 +14,7 @@ Repo: `sreekarun/adk-chatbot`. PRs and workflow runs are linked where they exist
 | Code | Current agent (deployed by the pipeline) | Terraform placeholder image (never deployed) |
 | Identity | Agent Identity | `adk-chatbot-app` service account |
 | Validated | Yes: prompt test, load test, logs, telemetry uploads | No |
-| Size | 4 vCPU / 8 GiB, 1 warm instance → **0 warm, 1 vCPU / 2 GiB** on the next pipeline deploy | 4 vCPU / 8 GiB, 1 warm instance (until its first deploy) |
+| Size | 4 vCPU / 8 GiB, 1 warm instance → **0 warm, max 1, 1 vCPU / 1 GiB** on the next pipeline deploy | 4 vCPU / 8 GiB, 1 warm instance (until its first deploy) |
 
 **Next steps**
 
@@ -153,7 +153,8 @@ What happened:
 - The Terraform template sizes each runtime at `min_instances = 1`, 4 vCPU, 8 GiB.
   At list price that's up to ~$300 per runtime per month if the warm instance is
   billed, far too much for a proof of concept with no users.
-- The workflows now deploy with `--min-instances 0 --cpu 1 --memory 2Gi`.
+- The workflows now deploy at Agent Runtime's minimums: `--min-instances 0 --max-instances 1 --concurrency 3 --cpu 1 --memory 1Gi`
+  (concurrency 3 = the recommended 2 × cpu + 1). No scaling is needed for a PoC.
   Terraform ignores `deployment_spec` after creation, so the deploy step is where
   sizing lives.
 - Deleted the pre-pipeline runtime `sreeai-noorg/.../7387508675864166400` (it was
