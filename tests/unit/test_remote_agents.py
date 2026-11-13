@@ -23,3 +23,42 @@ def test_news_agent_enabled_with_card_url(monkeypatch) -> None:
         agent = remote_agents.news_agent()
     assert isinstance(agent, RemoteA2aAgent)
     assert agent.name == "ai_news_agent"
+
+
+def test_to_mtls_host() -> None:
+    assert (
+        remote_agents._to_mtls_host("us-east4-aiplatform.googleapis.com")
+        == "us-east4-aiplatform.mtls.googleapis.com"
+    )
+    assert (
+        remote_agents._to_mtls_host("us-east4-aiplatform.mtls.googleapis.com")
+        == "us-east4-aiplatform.mtls.googleapis.com"
+    )
+    assert remote_agents._to_mtls_host("localhost") == "localhost"
+
+
+def _auth(use_mtls_host: bool) -> remote_agents._GoogleAuth:
+    creds = mock.Mock(valid=True, token="tok")
+    with mock.patch("google.auth.default", return_value=(creds, "p")):
+        return remote_agents._GoogleAuth(use_mtls_host=use_mtls_host)
+
+
+def test_auth_moves_request_to_mtls_host_when_cert_present() -> None:
+    import httpx
+
+    request = httpx.Request(
+        "GET", "https://us-east4-aiplatform.googleapis.com/reasoningEngines/v1/x"
+    )
+    sent = next(_auth(use_mtls_host=True).auth_flow(request))
+    assert sent.url.host == "us-east4-aiplatform.mtls.googleapis.com"
+    assert sent.headers["Host"] == "us-east4-aiplatform.mtls.googleapis.com"
+    assert sent.headers["Authorization"] == "Bearer tok"
+
+
+def test_auth_keeps_host_without_cert() -> None:
+    import httpx
+
+    request = httpx.Request("GET", "https://us-east4-aiplatform.googleapis.com/x")
+    sent = next(_auth(use_mtls_host=False).auth_flow(request))
+    assert sent.url.host == "us-east4-aiplatform.googleapis.com"
+    assert sent.headers["Authorization"] == "Bearer tok"
