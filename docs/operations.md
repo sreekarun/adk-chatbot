@@ -47,6 +47,7 @@ gcloud logging read 'resource.type="aiplatform.googleapis.com/ReasoningEngine"' 
 | `MODEL_NAME` | default in `agent.py` | `gemini-3.8-flash` |
 | `MODEL_LOCATION` | default in `agent.py` | `global` — required for this model on a regional runtime |
 | `LOGS_BUCKET_NAME`, `OTEL_*` | pipeline `--update-env-vars` / Terraform | telemetry |
+| `NEWS_AGENT_CARD_URL` | pipeline, from GitHub vars `NEWS_AGENT_CARD_URL_STAGING` / `_PROD` | A2A card of the AI news agent in the same environment (`.../reasoningEngines/<id>/api/a2a/ai_news_agent/.well-known/agent-card.json`). Unset or empty disables the hand-off. The caller's identity needs `roles/aiplatform.user` in the news agent's project (already granted in staging/prod) |
 | Runtime size | pipeline `--min-instances 0 --max-instances 1 --concurrency 3 --cpu 1 --memory 1Gi` | PoC sizing at Agent Runtime minimums: scale to zero (idle costs nothing; the first request after idle has a cold start), at most 1 instance, 3 concurrent requests. Terraform's `deployment_spec` (min 1, 4 vCPU, 8 GiB) only applies at creation; raise these flags for real traffic |
 | `GCSFS_EXPERIMENTAL_ZB_HNS_SUPPORT` | pipeline `--update-env-vars` | `false`: gcsfs skips its Storage Control bucket-type lookup, which returns 401 under Agent Identity ("Could not determine bucket type ... falling back to GCSFileSystem") on every completion upload. The logs bucket is a standard regional bucket, so the plain filesystem is the right one |
 
