@@ -170,6 +170,13 @@ What happened:
 - The chatbot discovers it through its A2A agent card: `NEWS_AGENT_CARD_URL`
   adds a `RemoteA2aAgent` sub-agent, and the chatbot transfers AI-news questions
   to it. Calls authenticate with the runtime's own Google credentials.
+- **Problem:** the first staging test got `401` fetching the card. Agent Identity
+  tokens are certificate-bound and only accepted over mTLS on
+  `*.mtls.googleapis.com`; the hand-built httpx client sent a plain bearer token
+  to the normal host (it worked locally with user credentials). **Fix:** present
+  google-auth's client certificate and rewrite requests to the mTLS host. Same root
+  cause as the gcsfs 401 in step 7: hand-rolled Google API calls must do what the
+  client libraries do under Agent Identity.
 
 ## Lessons
 
