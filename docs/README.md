@@ -9,7 +9,7 @@ How this agent is built, tested, deployed and operated.
 | [cicd-setup.md](cicd-setup.md) | Bootstrapping (or rebuilding) the GCP projects, Terraform and GitHub Actions — one-time |
 | [release-process.md](release-process.md) | Shipping a change: PR → staging → approval → production |
 | [operations.md](operations.md) | Testing deployed agents, logs, config, troubleshooting, known gotchas |
-| [history.md](history.md) | How the project got here (manual `adk deploy` → agents-cli → Terraform + GitHub Actions) |
+| [history.md](history.md) | Developer journey: each step, what broke and why, lessons, current state and next steps |
 
 ## Quick reference
 
