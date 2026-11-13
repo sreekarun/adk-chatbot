@@ -25,8 +25,10 @@ Repo: `sreekarun/adk-chatbot`. PRs and workflow runs are linked where they exist
    [operations.md](operations.md#switching-a-runtime-to-agent-identity).
 2. **Prod sizing:** prod keeps the template default (1 warm 4 vCPU / 8 GiB
    instance) until its first approved deploy applies the PoC sizing.
-3. **News hand-off in prod:** set `NEWS_AGENT_CARD_URL_PROD` only after the AI news
-   agent's prod runtime has been deployed (it runs the placeholder until then).
+3. **Registry discovery in prod:** set `AGENT_REGISTRY_ENABLED_PROD=true` only after
+   the agents it should find are deployed in prod (the news agent runs the
+   placeholder until its first approved deploy), and grant the prod identity
+   `roles/agentregistry.viewer`.
 
 ---
 
@@ -177,6 +179,22 @@ What happened:
   google-auth's client certificate and rewrite requests to the mTLS host. Same root
   cause as the gcsfs 401 in step 7: hand-rolled Google API calls must do what the
   client libraries do under Agent Identity.
+
+## 10. Dynamic discovery through Agent Registry (2026-11-13)
+
+- Agent Runtime registers every deployed agent in Agent Registry, including the
+  A2A card each deploy stores. The chatbot replaced its fixed news sub-agent
+  (`NEWS_AGENT_CARD_URL`) with `find_agents` / `ask_agent` tools that list the
+  registry at request time and call the chosen agent over A2A.
+- **Gotcha:** the registry advertises Agent Runtime's native `.../a2a` endpoint,
+  which rejects these containers ("does not have A2A methods defined"). The
+  working endpoint is the `.../api/a2a/<app>` interface listed in the stored card.
+- **Gotcha:** the news agent crashed on A2A calls with
+  `'dict' object has no attribute 'model_dump'` in `VertexAiSessionService` because
+  `propagate_grounding_metadata=True` was set on its `AgentTool` (fixed in
+  ai-news-agent PR #2).
+- Staging keeps 1 warm instance per agent (~$69/month each) so cold starts don't
+  slow development.
 
 ## Lessons
 
