@@ -53,6 +53,17 @@
           }
         ]
       }
+    },
+    {
+      "eval_case_id": "ai_concept_no_handoff",
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Explain what a transformer model is in two sentences."
+          }
+        ]
+      }
     }
   ]
 }
