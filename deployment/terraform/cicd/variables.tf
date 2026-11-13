@@ -118,5 +118,7 @@ variable "agent_identity_roles" {
     "roles/logging.logWriter",
     "roles/monitoring.metricWriter",
     "roles/cloudtrace.agent",
+    # Local addition: the chatbot lists Agent Registry to discover other agents.
+    "roles/agentregistry.viewer",
   ]
 }
