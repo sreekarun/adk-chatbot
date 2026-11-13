@@ -17,10 +17,17 @@ INSTRUCTION = "Answer user questions to the best of your knowledge"
 # Optional hand-off to the AI news agent over A2A (NEWS_AGENT_CARD_URL).
 _news_agent = news_agent()
 if _news_agent:
-    INSTRUCTION += (
-        ". For questions about current or recent AI news, transfer to "
-        "ai_news_agent; answer everything else yourself."
-    )
+    INSTRUCTION += """.
+
+AI news: for any question about current, recent, latest or top AI news,
+announcements, releases or developments, always transfer to ai_news_agent, even if
+an earlier transfer in this conversation failed (it may have recovered). Never
+answer current AI news from your own knowledge: it is out of date. If the transfer
+fails, tell the user the news service is unavailable right now and suggest trying
+again shortly, without listing stories from memory.
+
+Answer everything else yourself, including general or historical questions about
+AI concepts that don't depend on recent events."""
 
 root_agent = Agent(
     model=Gemini(model=MODEL_NAME, client_kwargs={"location": MODEL_LOCATION}),
