@@ -104,5 +104,5 @@ run replaces it with the real agent.
 ## 9. Retire the old runtime
 
 The pre-pipeline runtime `projects/sreeai-noorg/locations/us-east4/reasoningEngines/7387508675864166400`
-(created by `adk deploy`, later updated by `agents-cli deploy`) is deleted only after
-staging and production both answer — see [history.md](history.md).
+(created by `adk deploy`, later updated by `agents-cli deploy`) was deleted on
+2026-11-12, once the pipeline's staging runtime was validated. See [history.md](history.md).
