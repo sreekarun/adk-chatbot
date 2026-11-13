@@ -64,11 +64,12 @@ jobs:
         run: uv sync --locked
 
       - name: Deploy to Staging (Agent Runtime)
+        # Staging keeps 1 warm instance (--min-instances 1) so development isn't slowed by cold starts
         run: |
           uvx google-agents-cli@1.14.0 deploy \
             --project ${{ vars.STAGING_PROJECT_ID }} \
             --region ${{ vars.REGION }} \
-            --min-instances 0 --max-instances 1 --concurrency 3 --cpu 1 --memory 1Gi \
+            --min-instances 1 --max-instances 1 --concurrency 3 --cpu 1 --memory 1Gi \
             --update-env-vars="OTEL_RESOURCE_ATTRIBUTES=service.version=${{ github.sha }},LOGS_BUCKET_NAME=${{ vars.LOGS_BUCKET_NAME_STAGING }},GOOGLE_GENAI_USE_ENTERPRISE=true,GCSFS_EXPERIMENTAL_ZB_HNS_SUPPORT=false,AGENT_REGISTRY_ENABLED=true" \
             --remove-env-vars=GOOGLE_GENAI_USE_VERTEXAI,NEWS_AGENT_CARD_URL
 
