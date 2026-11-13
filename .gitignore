@@ -50,3 +50,6 @@ deployment_metadata.json.lock
 *.tfstate
 *.tfstate.*
 *.tfplan
+
+# Claude Code personal settings
+.claude/settings.local.json

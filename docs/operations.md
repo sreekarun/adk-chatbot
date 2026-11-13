@@ -42,7 +42,7 @@ gcloud logging read 'resource.type="aiplatform.googleapis.com/ReasoningEngine"' 
 
 | Variable | Where set | Notes |
 |---|---|---|
-| `GOOGLE_GENAI_USE_ENTERPRISE` | Terraform (runtime env), `.env` locally | Enterprise/Vertex backend. Don't also set `GOOGLE_GENAI_USE_VERTEXAI` |
+| `GOOGLE_GENAI_USE_ENTERPRISE` | Terraform + pipeline `--update-env-vars`, `.env` locally | Enterprise/Vertex backend. Don't also set `GOOGLE_GENAI_USE_VERTEXAI`: with no `.env` in CI, agents-cli would add both, so the workflows pass `GOOGLE_GENAI_USE_ENTERPRISE=true` and `--remove-env-vars=GOOGLE_GENAI_USE_VERTEXAI` |
 | `GOOGLE_CLOUD_PROJECT` / `GOOGLE_CLOUD_LOCATION` | Agent Runtime / Terraform | Runtime location = region; model location is separate |
 | `MODEL_NAME` | default in `agent.py` | `gemini-3.8-flash` |
 | `MODEL_LOCATION` | default in `agent.py` | `global` — required for this model on a regional runtime |
@@ -50,7 +50,8 @@ gcloud logging read 'resource.type="aiplatform.googleapis.com/ReasoningEngine"' 
 
 Secrets: store in Secret Manager in the target project and pass via
 `agents-cli deploy --secrets ENV=SECRET[:VERSION]` in the workflow; grant
-`roles/secretmanager.secretAccessor` to the app service account.
+`roles/secretmanager.secretAccessor` to the runtime's Agent Identity principal
+(add it to `var.agent_identity_roles` or a dedicated binding in `iam.tf`).
 
 ## Terraform
 
@@ -63,6 +64,27 @@ Secrets: store in Secret Manager in the target project and pass via
   create another runtime and telemetry stack in `sreeai-noorg`.
 - Terraform cannot adopt a runtime that `agents-cli deploy` created outside it;
   use `terraform import` if that ever becomes necessary.
+
+## Switching a runtime to Agent Identity
+
+Changing the runtime resource through Terraform makes the provider resend the
+whole spec, **including the placeholder source** (despite `ignore_changes`), so the
+runtime ends up serving Google's "Hello from Cloud Run" image. Order of operations:
+
+1. Targeted `terraform plan` of the runtime + its `agent_identity_roles` /
+   `agent_identity_logs_bucket` entries. Apply the runtime first: the IAM members
+   depend on `effective_identity`, which only becomes the agent principal *after* the
+   switch, so a combined first apply fails with "Provider produced inconsistent
+   final plan". Then re-plan and apply the IAM bindings.
+2. Make sure the workflows on `main` don't pass `--service-account`.
+3. Redeploy the code through the pipeline (`gh workflow run staging.yaml --ref main`
+   for staging; approve the production job for prod).
+4. Verify: `agents-cli run --mode adk "hello" --url ...`, then check logs for
+   `PERMISSION_DENIED`.
+
+Phase 2 (prod, plus removing the old `adk-chatbot-app` SAs and the
+`APP_SERVICE_ACCOUNT_*` GitHub variables) is the full `agents-cli infra cicd ...
+--apply`, followed by an approved prod deploy.
 
 ## Troubleshooting
 

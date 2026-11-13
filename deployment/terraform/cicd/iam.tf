@@ -48,20 +48,28 @@ resource "google_project_iam_member" "other_projects_roles" {
   member     = "serviceAccount:${resource.google_service_account.cicd_runner_sa.email}"
   depends_on = [resource.google_project_service.cicd_services, resource.google_project_service.deploy_project_services]
 }
-# 3. Grant application SA the required permissions to run the application
-resource "google_project_iam_member" "app_sa_roles" {
+# 3. Grant the Agent Identity principal the permissions required to run the application.
+resource "google_project_iam_member" "agent_identity_roles" {
   for_each = {
-    for pair in setproduct(keys(local.deploy_project_ids), var.app_sa_roles) :
+    for pair in setproduct(keys(local.deploy_project_ids), var.agent_identity_roles) :
     join(",", pair) => {
-      project = local.deploy_project_ids[pair[0]]
-      role    = pair[1]
+      engine_key = pair[0]
+      project    = local.deploy_project_ids[pair[0]]
+      role       = pair[1]
     }
   }
 
-  project    = each.value.project
-  role       = each.value.role
-  member     = "serviceAccount:${google_service_account.app_sa[split(",", each.key)[0]].email}"
-  depends_on = [resource.google_project_service.cicd_services, resource.google_project_service.deploy_project_services]
+  project = each.value.project
+  role    = each.value.role
+  member  = "principal://${google_vertex_ai_reasoning_engine.app[each.value.engine_key].spec[0].effective_identity}"
+}
+
+resource "google_storage_bucket_iam_member" "agent_identity_logs_bucket" {
+  for_each = local.deploy_project_ids
+
+  bucket = google_storage_bucket.logs_data_bucket[each.value].name
+  role   = "roles/storage.objectAdmin"
+  member = "principal://${google_vertex_ai_reasoning_engine.app[each.key].spec[0].effective_identity}"
 }
 
 

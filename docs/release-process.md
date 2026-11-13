@@ -27,8 +27,9 @@ PRs that only touch docs, `README.md` or `CLAUDE.md` skip the checks.
 
 Workflow: `.github/workflows/staging.yaml` (same path filter as above).
 
-1. `agents-cli deploy --project adk-chatbot-staging --region us-east4` using the
-   Terraform-created app service account. It updates the staging runtime in place
+1. `agents-cli deploy --project adk-chatbot-staging --region us-east4`, keeping the
+   runtime's existing identity (no `--service-account`; see
+   [architecture.md](architecture.md#runtime-identity-agent-identity)). It updates the staging runtime in place
    (matched by display name `adk-chatbot`).
 2. Load test: 30 s of Locust against staging (`tests/load_test/`); results are
    copied to `gs://<staging logs bucket>/load-test-results/`.

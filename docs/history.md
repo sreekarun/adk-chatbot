@@ -22,6 +22,13 @@ Several model/location iterations ended on `gemini-3.8-flash` via `global`.
    `adk-chatbot-prod`, added the GitHub Actions scaffolding, gated production on
    manual approval, and applied the CI/CD Terraform (94 resources). See
    [cicd-setup.md](cicd-setup.md).
+5. **Agent Identity (phase 1, staging)** — switched the staging runtime from the
+   `adk-chatbot-app` service account to Agent Identity with a targeted Terraform
+   apply, granted the agent principal its roles, and dropped `--service-account`
+   from the workflows. The Terraform update reset staging to the placeholder image;
+   the pipeline redeploys the agent. Workflows now also set only
+   `GOOGLE_GENAI_USE_ENTERPRISE` (not `GOOGLE_GENAI_USE_VERTEXAI`). Prod follows in
+   phase 2 after staging is validated.
 
 ## Retired
 
