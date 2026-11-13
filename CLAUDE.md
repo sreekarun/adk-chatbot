@@ -65,6 +65,9 @@ bootstrap in `docs/cicd-setup.md`).
   pass `--service-account` in the workflows — Agent Runtime rejects it. Any Terraform
   change to the runtime resource resets its code to the placeholder: always follow
   it with a pipeline deploy (`docs/operations.md`).
+- Runtime size is set by the deploy flags in the workflows (`--min-instances 0
+  --cpu 1 --memory 2Gi`, PoC sizing), not Terraform (`deployment_spec` is ignored
+  after creation).
 - Keep the committed `deployment_metadata.json` at `null` values. agents-cli deploys
   to the runtime ID recorded there before matching by name, so a stale ID sends CI
   to the wrong project (403).

@@ -14,6 +14,7 @@ Repo: `sreekarun/adk-chatbot`. PRs and workflow runs are linked where they exist
 | Code | Current agent (deployed by the pipeline) | Terraform placeholder image (never deployed) |
 | Identity | Agent Identity | `adk-chatbot-app` service account |
 | Validated | Yes: prompt test, load test, logs, telemetry uploads | No |
+| Size | 4 vCPU / 8 GiB, 1 warm instance → **0 warm, 1 vCPU / 2 GiB** on the next pipeline deploy | 4 vCPU / 8 GiB, 1 warm instance (until its first deploy) |
 
 **Next steps**
 
@@ -22,8 +23,8 @@ Repo: `sreekarun/adk-chatbot`. PRs and workflow runs are linked where they exist
    GitHub variables), then an approved prod deploy. The apply resets prod to the
    placeholder, so the deploy must come after it. See
    [operations.md](operations.md#switching-a-runtime-to-agent-identity).
-2. **Retire the old runtime** `sreeai-noorg/.../7387508675864166400` once prod is
-   verified.
+2. **Prod sizing:** prod keeps the template default (1 warm 4 vCPU / 8 GiB
+   instance) until its first approved deploy applies the PoC sizing.
 
 ---
 
@@ -147,6 +148,17 @@ What happened:
   ([43347938264](https://github.com/sreekarun/adk-chatbot/actions/runs/43347938264)).
   Afterwards: no warnings, and uploads still landed.
 
+## 8. Cost trim for the PoC (2026-11-12)
+
+- The Terraform template sizes each runtime at `min_instances = 1`, 4 vCPU, 8 GiB.
+  At list price that's up to ~$300 per runtime per month if the warm instance is
+  billed, far too much for a proof of concept with no users.
+- The workflows now deploy with `--min-instances 0 --cpu 1 --memory 2Gi`.
+  Terraform ignores `deployment_spec` after creation, so the deploy step is where
+  sizing lives.
+- Deleted the pre-pipeline runtime `sreeai-noorg/.../7387508675864166400` (it was
+  scale-to-zero, but redundant).
+
 ## Lessons
 
 - Plan, review, then apply. Split identity changes: the runtime first, then the IAM
@@ -163,5 +175,5 @@ What happened:
 
 | Resource | Status |
 |---|---|
-| `projects/sreeai-noorg/locations/us-east4/reasoningEngines/7387508675864166400` (`adk-chatbot`) | To be deleted once prod is verified |
+| `projects/sreeai-noorg/locations/us-east4/reasoningEngines/7387508675864166400` (`adk-chatbot`) | Deleted 2026-11-12 (with its sessions) |
 | `deploy.env`, `requirements.txt` | Removed (replaced by root `.env` and `pyproject.toml`) |
