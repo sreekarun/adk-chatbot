@@ -25,6 +25,8 @@ Repo: `sreekarun/adk-chatbot`. PRs and workflow runs are linked where they exist
    [operations.md](operations.md#switching-a-runtime-to-agent-identity).
 2. **Prod sizing:** prod keeps the template default (1 warm 4 vCPU / 8 GiB
    instance) until its first approved deploy applies the PoC sizing.
+3. **News hand-off in prod:** set `NEWS_AGENT_CARD_URL_PROD` only after the AI news
+   agent's prod runtime has been deployed (it runs the placeholder until then).
 
 ---
 
@@ -159,6 +161,15 @@ What happened:
   sizing lives.
 - Deleted the pre-pipeline runtime `sreeai-noorg/.../7387508675864166400` (it was
   scale-to-zero, but redundant).
+
+## 9. AI news agent and A2A hand-off (2026-11-13)
+
+- A second agent, `sreekarun/ai-news-agent`, was scaffolded as its own repo and
+  deployed to the same staging/prod projects (its own runtime, WIF pool, CI SA,
+  logs bucket and state prefix; the plan changed nothing of this project's).
+- The chatbot discovers it through its A2A agent card: `NEWS_AGENT_CARD_URL`
+  adds a `RemoteA2aAgent` sub-agent, and the chatbot transfers AI-news questions
+  to it. Calls authenticate with the runtime's own Google credentials.
 
 ## Lessons
 

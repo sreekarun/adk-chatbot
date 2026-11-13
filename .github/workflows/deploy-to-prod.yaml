@@ -75,6 +75,6 @@ jobs:
             --project ${{ vars.PROD_PROJECT_ID }} \
             --region ${{ vars.REGION }} \
             --min-instances 0 --max-instances 1 --concurrency 3 --cpu 1 --memory 1Gi \
-            --update-env-vars="OTEL_RESOURCE_ATTRIBUTES=service.version=${{ github.sha }},LOGS_BUCKET_NAME=${{ vars.LOGS_BUCKET_NAME_PROD }},GOOGLE_GENAI_USE_ENTERPRISE=true,GCSFS_EXPERIMENTAL_ZB_HNS_SUPPORT=false" \
+            --update-env-vars="OTEL_RESOURCE_ATTRIBUTES=service.version=${{ github.sha }},LOGS_BUCKET_NAME=${{ vars.LOGS_BUCKET_NAME_PROD }},GOOGLE_GENAI_USE_ENTERPRISE=true,GCSFS_EXPERIMENTAL_ZB_HNS_SUPPORT=false,NEWS_AGENT_CARD_URL=${{ vars.NEWS_AGENT_CARD_URL_PROD }}" \
             --remove-env-vars=GOOGLE_GENAI_USE_VERTEXAI
 

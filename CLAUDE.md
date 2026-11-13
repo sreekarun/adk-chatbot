@@ -83,6 +83,10 @@ bootstrap in `docs/cicd-setup.md`).
 - `MODEL_LOCATION` (default `global`) — location for model calls, independent of
   `GOOGLE_CLOUD_LOCATION`. Needed because `gemini-3.8-flash` is only served from
   `global` (404 in us-east4 / us-central1), while an Agent Runtime is regional.
+- `NEWS_AGENT_CARD_URL` (optional) — A2A agent card URL of the AI news agent
+  (`sreekarun/ai-news-agent`). When set, `root_agent` gets a `RemoteA2aAgent` sub-agent
+  (`chatbot/remote_agents.py`) and transfers AI-news questions to it. CI sets it from
+  the `NEWS_AGENT_CARD_URL_STAGING` / `_PROD` GitHub variables; unset = disabled.
 
 ## Conventions
 
