@@ -28,8 +28,8 @@ resource "google_vertex_ai_reasoning_engine" "app" {
 
   spec {
     agent_framework = var.agent_framework
-    service_account = google_service_account.app_sa[each.key].email
-    identity_type   = "SERVICE_ACCOUNT"
+    service_account = ""
+    identity_type   = "AGENT_IDENTITY"
 
     deployment_spec {
       min_instances         = 1

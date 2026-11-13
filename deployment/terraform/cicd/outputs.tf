@@ -12,11 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-output "app_service_account_emails" {
-  description = "Application service account emails by environment"
-  value       = { for k, v in google_service_account.app_sa : k => v.email }
-}
-
 output "cicd_runner_service_account_email" {
   description = "CI/CD runner service account email"
   value       = google_service_account.cicd_runner_sa.email

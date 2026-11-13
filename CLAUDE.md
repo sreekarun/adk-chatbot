@@ -61,6 +61,10 @@ bootstrap in `docs/cicd-setup.md`).
   name `adk-chatbot`.
 - Staging deploys only when `chatbot/**`, `tests/**`, `deployment/**` or `uv.lock`
   change. No revision rollback: revert on `main`.
+- Runtimes use Agent Identity (staging now; prod after staging is validated). Don't
+  pass `--service-account` in the workflows — Agent Runtime rejects it. Any Terraform
+  change to the runtime resource resets its code to the placeholder: always follow
+  it with a pipeline deploy (`docs/operations.md`).
 - Keep the committed `deployment_metadata.json` at `null` values. agents-cli deploys
   to the runtime ID recorded there before matching by name, so a stale ID sends CI
   to the wrong project (403).

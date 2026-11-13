@@ -15,7 +15,8 @@
  │ WIF pool/provider ─▶ adk-chatbot-cb (CI runner SA)     │   │                             │
  │ gs://adk-chatbot-prod-terraform-state (TF state)       │   │                             │
  │ Agent Runtime "adk-chatbot"  (721618277402411008)      │   │ Agent Runtime "adk-chatbot" │
- │   runs as adk-chatbot-app@adk-chatbot-prod             │   │   (1601509054599921664)     │
+ │   runs as adk-chatbot-app SA (Agent Identity: phase 2) │   │   (1601509054599921664)     │
+ │                                                        │   │   runs as Agent Identity    │
  │ logs bucket, BigQuery adk_chatbot_telemetry, log sink  │   │ logs bucket, BigQuery, sink │
  └──────────────────────────┬─────────────────────────────┘   └──────────────┬──────────────┘
                             └──────── model calls: gemini-3.8-flash @ global ┘
@@ -40,8 +41,8 @@
 | Environment | GCP project | Runtime ID (us-east4) | Runs as | Deployed by |
 |---|---|---|---|---|
 | local dev | `sreeai-noorg` | — (local) | your ADC user | `agents-cli run` / `playground` |
-| staging | `adk-chatbot-staging` | `1601509054599921664` | `adk-chatbot-app@adk-chatbot-staging.iam.gserviceaccount.com` | `staging.yaml` on merge to `main` |
-| production | `adk-chatbot-prod` | `721618277402411008` | `adk-chatbot-app@adk-chatbot-prod.iam.gserviceaccount.com` | `deploy-to-prod.yaml` after approval |
+| staging | `adk-chatbot-staging` | `1601509054599921664` | Agent Identity (`principal://agents.global.proj-<number>.system.id.goog/.../reasoningEngines/1601509054599921664`) | `staging.yaml` on merge to `main` |
+| production | `adk-chatbot-prod` | `721618277402411008` | `adk-chatbot-app@adk-chatbot-prod.iam.gserviceaccount.com` (moves to Agent Identity in phase 2) | `deploy-to-prod.yaml` after approval |
 
 CI/CD resources (WIF pool, `adk-chatbot-cb@adk-chatbot-prod.iam.gserviceaccount.com`,
 Terraform state bucket) live in the prod project. Both projects bill to the same
@@ -55,10 +56,32 @@ us-east4 and us-central1). `agent.py` therefore builds the model as
 `Gemini(model=MODEL_NAME, client_kwargs={'location': MODEL_LOCATION})`, so model calls
 always go to `global` regardless of where the runtime runs.
 
+## Runtime identity (Agent Identity)
+
+Runtimes use **Agent Identity** (`identity_type = "AGENT_IDENTITY"` in
+`deployment/terraform/cicd/service.tf`; `identity_default: agent_identity` in the
+manifest). Each runtime gets its own principal,
+`principal://agents.global.proj-<project number>.system.id.goog/resources/aiplatform/projects/<project number>/locations/us-east4/reasoningEngines/<runtime id>`,
+exposed by Terraform as `spec[0].effective_identity`. This is what enables the
+console's Identity tab. Terraform grants that principal the roles in
+`var.agent_identity_roles` (aiplatform.user, serviceusage.serviceUsageConsumer,
+browser, cloudapiregistry.viewer, logging.logWriter, monitoring.metricWriter,
+cloudtrace.agent) plus `roles/storage.objectAdmin` on the logs bucket.
+
+Rollout is phased: staging switched on 2026-11-12; prod still runs as the
+`adk-chatbot-app` service account until staging is validated (see
+[operations.md](operations.md#switching-a-runtime-to-agent-identity)).
+
+The workflows don't pass `--service-account`: Agent Runtime rejects it on an
+Agent Identity runtime (`400 FAILED_PRECONDITION: Cannot set spec.service_account
+when spec.identity_type is AGENT_IDENTITY`), and without it agents-cli keeps
+whatever identity the runtime already has.
+
 ## What Terraform manages (per environment unless noted)
 
 - 26 enabled APIs (Vertex AI, Cloud Build, Logging, BigQuery, …)
-- App service account `adk-chatbot-app` + IAM roles; CI runner SA (prod only)
+- IAM roles for each runtime's Agent Identity principal; CI runner SA (prod only)
+  (the `adk-chatbot-app` SAs stay until the phase 2 apply removes them)
 - Workload Identity pool + GitHub provider, bound to this repo (prod only)
 - Agent Runtime `adk-chatbot` (created with placeholder source; real code arrives
   via the pipeline's `agents-cli deploy`)

@@ -106,3 +106,17 @@ variable "agent_framework" {
   type        = string
   default     = "google-adk"
 }
+
+variable "agent_identity_roles" {
+  description = "List of roles to assign to each agent's Agent Identity principal. Keep the first six in sync with AGENT_IDENTITY_ROLES in agents-cli, which `agents-cli deploy` grants."
+  type        = list(string)
+  default = [
+    "roles/aiplatform.user",
+    "roles/serviceusage.serviceUsageConsumer",
+    "roles/browser",
+    "roles/cloudapiregistry.viewer",
+    "roles/logging.logWriter",
+    "roles/monitoring.metricWriter",
+    "roles/cloudtrace.agent",
+  ]
+}
