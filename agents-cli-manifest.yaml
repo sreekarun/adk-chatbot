@@ -4,7 +4,15 @@ language: python
 base_template: adk_python
 framework: google-adk
 create_params:
-  root_agent_name: root_agent
+  # The root agent's ADK name (chatbot/agent.py); also the A2A card's name,
+  # which is how Agent Registry lists this agent. Change both together.
+  root_agent_name: chatbot
+  # The {app_name} the agent is served under; must equal the agent directory.
+  app_name: chatbot
+  # Makes agents-cli deploy store the served A2A card on the runtime
+  # (spec.agent_card), which Agent Registry reads. Missing from manifests
+  # generated before the flag existed.
+  is_a2a: true
   deployment_target: agent_runtime
   agent_guidance_filename: CLAUDE.md
   cicd_runner: github_actions

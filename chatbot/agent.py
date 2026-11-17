@@ -37,8 +37,14 @@ don't depend on recent events."""
 
 root_agent = Agent(
     model=Gemini(model=MODEL_NAME, client_kwargs={"location": MODEL_LOCATION}),
-    name="root_agent",
-    description="A helpful assistant for user questions.",
+    # Keep in sync with create_params.root_agent_name in agents-cli-manifest.yaml.
+    # It's also the A2A agent card's name, which is how Agent Registry lists
+    # this agent.
+    name="chatbot",
+    description=(
+        "General-purpose assistant: answers questions directly and hands requests "
+        "that need current events or a specialty to agents found in Agent Registry."
+    ),
     instruction=INSTRUCTION,
     tools=TOOLS,
 )

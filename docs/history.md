@@ -195,6 +195,12 @@ What happened:
   ai-news-agent PR #2).
 - Staging keeps 1 warm instance per agent (~$69/month each) so cold starts don't
   slow development.
+- **Gotcha:** the chatbot showed in the registry as "Agent deployed via Terraform"
+  with no card. Its manifest predates `create_params.is_a2a`, and agents-cli only
+  stores the served card on the runtime (`spec.agent_card`) when that flag is true.
+  Adding `is_a2a: true` (plus `app_name`) fixed it, and the root agent was renamed
+  from `root_agent` to `chatbot`, the card's name in the registry. No Terraform
+  change: the registry shows the card's description over the runtime's.
 
 ## Lessons
 
